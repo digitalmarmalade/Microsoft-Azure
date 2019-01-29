@@ -4,6 +4,7 @@ namespace SocialiteProviders\Azure;
 
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
 use SocialiteProviders\Manager\OAuth2\User;
+use Laravel\Socialite\Two\InvalidStateException;
 
 class Provider extends AbstractProvider
 {
@@ -32,8 +33,13 @@ class Provider extends AbstractProvider
     protected function getAuthUrl($state)
     {
         return $this->buildAuthUrlFromBase(
-            'https://login.microsoftonline.com/'.($this->config['tenant'] ?: 'common').'/oauth2/authorize', $state
+                        'https://login.microsoftonline.com/' . ($this->config['tenant'] ?: 'common') . '/oauth2/authorize', $state
         );
+    }
+
+    protected function getLogoutUrl($redirectBack)
+    {
+        return 'https://login.microsoftonline.com/' . ($this->config['tenant'] ?: 'common') . '/oauth2/logout' . '?' . http_build_query(['post_logout_redirect_uri' => $redirectBack], '', '&', $this->encodingType);
     }
 
     /**
@@ -55,6 +61,41 @@ class Provider extends AbstractProvider
         return $this->parseAccessToken($response->getBody());
     }
 
+    public function logout($redirectBack = null)
+    {
+        return dd($this->getLogoutUrl($redirectBack));
+    }
+
+    /**
+     * @return \SocialiteProviders\Manager\OAuth2\User
+     */
+    public function user()
+    {
+        if ($this->hasInvalidState()) {
+            throw new InvalidStateException();
+        }
+
+        $response = $this->getAccessTokenResponse($this->getCode());
+
+        $token = $this->parseAccessToken($response);
+        $userObject = $this->getUserByToken($token);
+        $groupsObject = $this->getUserMemberOfByToken($token);
+
+        $userObject['memberOf'] = $groupsObject;
+
+        $user = $this->mapUserToObject($userObject);
+
+        $this->credentialsResponseBody = $response;
+
+        if ($user instanceof User) {
+            $user->setAccessTokenResponseBody($this->credentialsResponseBody);
+        }
+
+        return $user->setToken($token)
+                        ->setRefreshToken($this->parseRefreshToken($response))
+                        ->setExpiresIn($this->parseExpiresIn($response));
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -65,8 +106,26 @@ class Provider extends AbstractProvider
                 'api-version' => $this->version,
             ],
             'headers' => [
-                'Accept'        => 'application/json',
-                'Authorization' => 'Bearer '.$token,
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $token,
+            ],
+        ]);
+
+        return json_decode($response->getBody(), true);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getUserMemberOfByToken($token)
+    {
+        $response = $this->getHttpClient()->get($this->graphUrl . '/memberOf', [
+            'query' => [
+                'api-version' => $this->version,
+            ],
+            'headers' => [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $token,
             ],
         ]);
 
@@ -79,8 +138,8 @@ class Provider extends AbstractProvider
     protected function mapUserToObject(array $user)
     {
         return (new User())->setRaw($user)->map([
-            'id'    => $user['objectId'], 'nickname' => null, 'name' => $user['displayName'],
-            'email' => $user['userPrincipalName'], 'avatar' => null,
+                    'id' => $user['objectId'], 'nickname' => null, 'name' => $user['displayName'],
+                    'email' => $user['userPrincipalName'], 'avatar' => null,
         ]);
     }
 
@@ -91,7 +150,7 @@ class Provider extends AbstractProvider
     {
         return array_merge(parent::getTokenFields($code), [
             'grant_type' => 'authorization_code',
-            'resource'   => 'https://graph.windows.net',
+            'resource' => 'https://graph.windows.net',
         ]);
     }
 

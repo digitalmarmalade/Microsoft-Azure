@@ -1,10 +1,14 @@
 {
-    "name": "socialiteproviders/microsoft-azure",
+    "name": "digitalmarmalade/microsoft-azure",
     "description": "Microsoft Azure OAuth2 Provider for Laravel Socialite",
     "license": "MIT",
     "authors": [{
         "name": "Chris Hemmings",
         "email": "chris@hemmin.gs"
+    },
+	{
+        "name": "Moisis Hadjiagathangelou",
+        "email": "moisis@digitalmarmalade.co.uk"
     }],
     "require": {
         "php": "^5.6 || ^7.0",
