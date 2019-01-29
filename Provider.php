@@ -63,7 +63,7 @@ class Provider extends AbstractProvider
 
     public function logout($redirectBack = null)
     {
-        return dd($this->getLogoutUrl($redirectBack));
+        return $this->getLogoutUrl($redirectBack);
     }
 
     /**
