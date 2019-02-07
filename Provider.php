@@ -174,7 +174,6 @@ class Provider extends AbstractProvider
      */
     protected function shouldTokenBeRefreshed()
     {
-        return true;
         // if token expired then force re-auth
         if ($this->hasTokenExpired()) {
             return false;
