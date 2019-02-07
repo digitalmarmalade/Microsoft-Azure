@@ -158,13 +158,11 @@ class Provider extends AbstractProvider
     public function refreshToken()
     {
         if ($this->shouldTokenBeRefreshed()) {
-            dump('Token Should Be Refreshed');
             $this->token_reponse = $this->getRefreshTokenResponse();
 
             return $this->getUserProfileFromReponse();
         }
 
-        dump('token fine');
         return $this->azure_user;
     }
 
