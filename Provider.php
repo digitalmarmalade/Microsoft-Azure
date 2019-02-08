@@ -83,8 +83,7 @@ class Provider extends AbstractProvider
      */
     protected function getAuthUrl($state)
     {
-        return $this->buildAuthUrlFromBase('https://login.microsoftonline.com/' . ($this->config['tenant'] ?: 'common') . '/oauth2/authorize',
-            $state);
+        return $this->buildAuthUrlFromBase('https://login.microsoftonline.com/' . ($this->config['tenant'] ?: 'common') . '/oauth2/authorize', $state);
     }
 
     /**
@@ -92,10 +91,9 @@ class Provider extends AbstractProvider
      *
      * @return string
      */
-    protected function getLogoutUrl($redirectBack)
+    public function getLogoutUrl($redirectBack)
     {
-        return 'https://login.microsoftonline.com/' . ($this->config['tenant'] ?: 'common') . '/oauth2/logout' . '?' . http_build_query(['post_logout_redirect_uri' => $redirectBack],
-                '', '&', $this->encodingType);
+        return 'https://login.microsoftonline.com/' . ($this->config['tenant'] ?: 'common') . '/oauth2/logout' . '?' . http_build_query(['post_logout_redirect_uri' => $redirectBack], '', '&', $this->encodingType);
     }
 
     /**
@@ -180,7 +178,7 @@ class Provider extends AbstractProvider
         }
 
         // if token coming to end of life then reresh it
-        return $this->isTokenUnderThreshold() ;
+        return $this->isTokenUnderThreshold();
     }
 
     /**
@@ -254,7 +252,7 @@ class Provider extends AbstractProvider
         }
 
         $user->setToken($token)->setRefreshToken($this->parseRefreshToken($this->token_reponse))
-             ->setExpiresIn($this->parseExpiresIn($this->token_reponse));
+                ->setExpiresIn($this->parseExpiresIn($this->token_reponse));
         $this->saveToSession($user);
 
         return $user;
@@ -370,11 +368,11 @@ class Provider extends AbstractProvider
     protected function mapUserToObject(array $user)
     {
         return (new User())->setRaw($user)->map([
-            'id' => $user['objectId'],
-            'nickname' => null,
-            'name' => $user['displayName'],
-            'email' => $user['userPrincipalName'],
-            'avatar' => null,
+                    'id' => $user['objectId'],
+                    'nickname' => null,
+                    'name' => $user['displayName'],
+                    'email' => $user['userPrincipalName'],
+                    'avatar' => null,
         ]);
     }
 
@@ -404,8 +402,8 @@ class Provider extends AbstractProvider
      */
     public function saveToSession($user)
     {
-        $encrypted = encrypt($user);
-        Session::set($this->session_token, $encrypted);
+//        $encrypted = encrypt($user);
+        Session::set($this->session_token, $user);
         Session::save();
 
         return $this;
@@ -421,8 +419,8 @@ class Provider extends AbstractProvider
         if ($this->session_loaded && $this->azure_user) {
             return $this->azure_user;
         } else {
-            $encrypted = Session::get($this->session_token);
-            $decrypted = decrypt($encrypted);
+            $decrypted = Session::get($this->session_token);
+//            $decrypted = decrypt($encrypted);
             if (isset($decrypted->accessTokenResponseBody)) {
                 $this->azure_user = $decrypted;
                 $this->credentialsResponseBody = $this->token_reponse = $decrypted->accessTokenResponseBody;
