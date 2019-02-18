@@ -318,24 +318,6 @@ class Provider extends AbstractProvider
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function getUserMemberOfByToken($token)
-    {
-        $response = $this->getHttpClient()->get($this->graphUrl . '/memberOf', [
-            'query' => [
-                'api-version' => $this->version,
-            ],
-            'headers' => [
-                'Accept' => 'application/json',
-                'Authorization' => 'Bearer ' . $token,
-            ],
-        ]);
-
-        return json_decode($response->getBody(), true);
-    }
-
-    /**
      * Get a transative list of groups the current user is a member of
      *
      * @param $token
