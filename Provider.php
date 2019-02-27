@@ -353,7 +353,7 @@ class Provider extends AbstractProvider
                     'id' => $user['objectId'],
                     'nickname' => null,
                     'name' => $user['displayName'],
-                    'email' => $user['userPrincipalName'],
+                    'email' => $user['userType'] === 'Guest' ? $user['mail'] : $user['userPrincipalName'],
                     'avatar' => null,
         ]);
     }
