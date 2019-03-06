@@ -221,7 +221,6 @@ class Provider extends AbstractProvider
         // get the diff between the teo
         $diffInMinutes = $expiry->diffInMinutes($now);
 
-
         // token expired
         if ($now->lessThan($expiry) && $diffInMinutes <= $this->token_refresh_threshold) {
             return true;
@@ -251,7 +250,8 @@ class Provider extends AbstractProvider
             $user->setAccessTokenResponseBody($this->credentialsResponseBody);
         }
 
-        $user->setToken($token)->setRefreshToken($this->parseRefreshToken($this->token_reponse))
+        $user->setToken($token)
+                ->setRefreshToken($this->parseRefreshToken($this->token_reponse))
                 ->setExpiresIn($this->parseExpiresIn($this->token_reponse));
         $this->saveToSession($user);
 
@@ -353,7 +353,7 @@ class Provider extends AbstractProvider
                     'id' => $user['objectId'],
                     'nickname' => null,
                     'name' => $user['displayName'],
-                    'email' => $user['userType'] === 'Guest' ? $user['mail'] : $user['userPrincipalName'],
+                    'email' => $user['mail'],
                     'avatar' => null,
         ]);
     }
