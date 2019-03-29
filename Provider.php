@@ -7,7 +7,6 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use GuzzleHttp\ClientInterface;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Session;
 use SocialiteProviders\Manager\OAuth2\User;
 use Laravel\Socialite\Two\InvalidStateException;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
@@ -385,7 +384,7 @@ class Provider extends AbstractProvider
     public function saveToSession($user)
     {
 //        $encrypted = encrypt($user);
-        Session::set($this->session_token, $user);
+        Session::put($this->session_token, $user);
         Session::save();
 
         return $this;
