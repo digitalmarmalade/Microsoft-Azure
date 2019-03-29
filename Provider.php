@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Crypt;
 use SocialiteProviders\Manager\OAuth2\User;
 use Laravel\Socialite\Two\InvalidStateException;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
+use Illuminate\Support\Facades\Session;
 
 class Provider extends AbstractProvider
 {
