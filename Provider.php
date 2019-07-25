@@ -45,7 +45,7 @@ class Provider extends AbstractProvider
      *
      * @var string
      */
-    protected $token_reponse;
+    protected $token_response;
 
     /**
      * Azure User profile
@@ -145,7 +145,7 @@ class Provider extends AbstractProvider
             throw new InvalidStateException();
         }
 
-        $this->token_reponse = $this->getAccessTokenResponse($this->getCode());
+        $this->token_response = $this->getAccessTokenResponse($this->getCode());
 
         return $this->getUserProfileFromReponse();
     }
@@ -153,11 +153,13 @@ class Provider extends AbstractProvider
     /**
      * Force a refresh of the token an user info
      */
-    public function refreshToken()
+    public function refreshToken($force = false)
     {
         if ($this->shouldTokenBeRefreshed()) {
-            $this->token_reponse = $this->getRefreshTokenResponse();
+            $this->token_response = $this->getRefreshTokenResponse();
 
+            return $this->getUserProfileFromReponse();
+        } else if ($force) {
             return $this->getUserProfileFromReponse();
         }
 
@@ -186,7 +188,7 @@ class Provider extends AbstractProvider
      */
     protected function parseExpiresOn()
     {
-        return Arr::get($this->token_reponse, 'expires_on');
+        return Arr::get($this->token_response, 'expires_on');
     }
 
     /**
@@ -236,7 +238,7 @@ class Provider extends AbstractProvider
      */
     public function getUserProfileFromReponse()
     {
-        $token = $this->parseAccessToken($this->token_reponse);
+        $token = $this->parseAccessToken($this->token_response);
         $userObject = $this->getUserByToken($token);
         $groupsObject = $this->getUserMemberGroupsByToken($token, $userObject['objectId']);
 
@@ -244,15 +246,15 @@ class Provider extends AbstractProvider
 
         $user = $this->mapUserToObject($userObject);
 
-        $this->credentialsResponseBody = $this->token_reponse;
+        $this->credentialsResponseBody = $this->token_response;
 
         if ($user instanceof User) {
             $user->setAccessTokenResponseBody($this->credentialsResponseBody);
         }
 
         $user->setToken($token)
-                ->setRefreshToken($this->parseRefreshToken($this->token_reponse))
-                ->setExpiresIn($this->parseExpiresIn($this->token_reponse));
+                ->setRefreshToken($this->parseRefreshToken($this->token_response))
+                ->setExpiresIn($this->parseExpiresIn($this->token_response));
         $this->saveToSession($user);
 
         return $user;
@@ -269,7 +271,7 @@ class Provider extends AbstractProvider
     {
         $this->getTokenFromSession();
 
-        if ($this->token_reponse['refresh_token']) {
+        if ($this->token_response['refresh_token']) {
             $postKey = (version_compare(ClientInterface::VERSION, '6') === 1) ? 'form_params' : 'body';
 
             $response = $this->getHttpClient()->post($this->getTokenUrl(), [
@@ -293,7 +295,7 @@ class Provider extends AbstractProvider
         return [
             'client_id' => $this->clientId,
             'grant_type' => 'refresh_token',
-            'refresh_token' => $this->token_reponse['refresh_token'],
+            'refresh_token' => $this->token_response['refresh_token'],
             'client_secret' => $this->clientSecret,
             'redirect_uri' => $this->redirectUrl,
         ];
@@ -384,7 +386,6 @@ class Provider extends AbstractProvider
      */
     public function saveToSession($user)
     {
-//        $encrypted = encrypt($user);
         Session::put($this->session_token, $user);
         Session::save();
 
@@ -402,10 +403,9 @@ class Provider extends AbstractProvider
             return $this->azure_user;
         } else {
             $decrypted = Session::get($this->session_token);
-//            $decrypted = decrypt($encrypted);
             if (isset($decrypted->accessTokenResponseBody)) {
                 $this->azure_user = $decrypted;
-                $this->credentialsResponseBody = $this->token_reponse = $decrypted->accessTokenResponseBody;
+                $this->credentialsResponseBody = $this->token_response = $decrypted->accessTokenResponseBody;
 
                 return $decrypted;
             }
@@ -422,7 +422,7 @@ class Provider extends AbstractProvider
     public function getTokenFromSession()
     {
         if ($this->getFromSession()) {
-            return $this->token_reponse;
+            return $this->token_response;
         }
 
         return false;
