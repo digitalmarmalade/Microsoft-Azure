@@ -65,7 +65,7 @@ class Provider extends AbstractProvider
 
     /**
      * timezone we expect token exipry to be in
-     * makes comaparisions correct
+     * makes comparisons correct
      *
      * @var string
      */
@@ -199,8 +199,7 @@ class Provider extends AbstractProvider
         $this->getTokenFromSession();
 
         $now = Carbon::now($this->token_timezone);
-        $expiry = Carbon::createFromTimestamp($this->parseExpiresOn());
-
+        $expiry = Carbon::createFromTimestamp($this->parseExpiresOn(), $this->token_timezone);
         // token expired
         if ($expiry->lessThan($now)) {
             return true;
@@ -218,7 +217,7 @@ class Provider extends AbstractProvider
 
         // get expiry and current time
         $now = Carbon::now($this->token_timezone);
-        $expiry = Carbon::createFromTimestamp($this->parseExpiresOn());
+        $expiry = Carbon::createFromTimestamp($this->parseExpiresOn(), $this->token_timezone);
 
         // get the diff between the teo
         $diffInMinutes = $expiry->diffInMinutes($now);
