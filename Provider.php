@@ -114,7 +114,7 @@ class Provider extends AbstractProvider
      */
     public function getAccessToken($code)
     {
-        Log::info('Azure.getAccessToken');
+        $this->debug('getAccessToken');
         $postKey = (version_compare(ClientInterface::VERSION, '6') === 1) ? 'form_params' : 'body';
 
         $response = $this->getHttpClient()->post($this->getTokenUrl(), [
@@ -135,7 +135,7 @@ class Provider extends AbstractProvider
      */
     public function logout($redirectBack = null)
     {
-        Log::info('Azure.logout');
+        $this->debug('logout');
         return $this->getLogoutUrl($redirectBack);
     }
 
@@ -158,12 +158,14 @@ class Provider extends AbstractProvider
      */
     public function refreshToken($force = false)
     {
-        Log::info('Azure.refreshToken');
+        $this->debug('refreshToken');
         if ($this->shouldTokenBeRefreshed()) {
+            $this->debug('refreshToken.refresh');
             $this->token_response = $this->getRefreshTokenResponse();
 
             return $this->getUserProfileFromReponse();
         } else if ($force) {
+            $this->debug('refreshToken.force');
             return $this->getUserProfileFromReponse();
         }
 
@@ -180,6 +182,7 @@ class Provider extends AbstractProvider
     {
         // if token expired then force re-auth
         if ($this->hasTokenExpired()) {
+            $this->debug('token has expired');
             return true;
         }
 
@@ -218,6 +221,7 @@ class Provider extends AbstractProvider
      */
     public function isTokenUnderThreshold()
     {
+        $this->debug('isTokenUnderThreshold');
         $this->getTokenFromSession();
 
         // get expiry and current time
@@ -229,7 +233,7 @@ class Provider extends AbstractProvider
 
         // token expired
         if ($now->lessThan($expiry) && $diffInMinutes <= $this->token_refresh_threshold) {
-            Log::info('Azure.isTokenUnderThreshold');
+            $this->debug('isTokenUnderThreshold true');
             return true;
         }
 
@@ -405,17 +409,20 @@ class Provider extends AbstractProvider
     public function getFromSession()
     {
         if ($this->session_loaded && $this->azure_user) {
+            $this->debug('getFromSession session loaded ' . $this->azure_user);
             return $this->azure_user;
         } else {
             $decrypted = Session::get($this->session_token);
             if (isset($decrypted->accessTokenResponseBody)) {
                 $this->azure_user = $decrypted;
                 $this->credentialsResponseBody = $this->token_response = $decrypted->accessTokenResponseBody;
+                $this->debug('getFromSession session decrypted ' . $this->azure_user);
 
                 return $decrypted;
             }
         }
 
+        $this->debug('getFromSession failed');
         return false;
     }
 
@@ -426,10 +433,16 @@ class Provider extends AbstractProvider
      */
     public function getTokenFromSession()
     {
+        $this->debug('getTokenFromSession');
         if ($this->getFromSession()) {
             return $this->token_response;
         }
 
         return false;
+    }
+
+    private function debug($msg)
+    {
+        Log::info('Azure: ' . $msg);
     }
 }
