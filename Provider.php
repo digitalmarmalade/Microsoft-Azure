@@ -182,7 +182,7 @@ class Provider extends AbstractProvider
     {
         // if token expired then force re-auth
         if ($this->hasTokenExpired()) {
-            $this->debug('token has expired');
+            $this->debug('shouldTokenBeRefreshed token has expired');
             return true;
         }
 
@@ -203,6 +203,7 @@ class Provider extends AbstractProvider
      */
     public function hasTokenExpired()
     {
+        $this->debug('hasTokenExpired');
         $this->getTokenFromSession();
 
         $now = Carbon::now($this->token_timezone);
@@ -395,7 +396,7 @@ class Provider extends AbstractProvider
      */
     public function saveToSession($user)
     {
-        $this->debug('saveToSession', ['user' => $user]);
+        $this->debug('saveToSession', ['expiresIn' => $user->expiresIn]);
         Session::put($this->session_token, $user);
         Session::save();
 
@@ -414,11 +415,11 @@ class Provider extends AbstractProvider
             return $this->azure_user;
         } else {
             $decrypted = Session::get($this->session_token);
-            $this->debug('getFromSession session decrypted', ['decrypted', $decrypted]);
+            $this->debug('getFromSession session decrypted', ['expiresIn', $decrypted->expiresIn]);
             if (isset($decrypted->accessTokenResponseBody)) {
                 $this->azure_user = $decrypted;
                 $this->credentialsResponseBody = $this->token_response = $decrypted->accessTokenResponseBody;
-                $this->debug('getFromSession session decrypted set', ['azure_user', $this->azure_user]);
+                $this->debug('getFromSession session decrypted set', ['expiresIn', $this->azure_user->expiresIn]);
 
                 return $decrypted;
             }
