@@ -209,7 +209,7 @@ class Provider extends AbstractProvider
         $expiry = Carbon::createFromTimestamp($this->parseExpiresOn(), $this->token_timezone);
         // token expired
         if ($expiry->lessThan($now)) {
-            Log::info('Azure.hasTokenExpired');
+            $this->debug('hasTokenExpired lessThan now');
             return true;
         }
 
@@ -395,6 +395,7 @@ class Provider extends AbstractProvider
      */
     public function saveToSession($user)
     {
+        $this->debug('saveToSession', ['user' => $user]);
         Session::put($this->session_token, $user);
         Session::save();
 
@@ -413,10 +414,11 @@ class Provider extends AbstractProvider
             return $this->azure_user;
         } else {
             $decrypted = Session::get($this->session_token);
+            $this->debug('getFromSession session decrypted', ['decrypted', $decrypted]);
             if (isset($decrypted->accessTokenResponseBody)) {
                 $this->azure_user = $decrypted;
                 $this->credentialsResponseBody = $this->token_response = $decrypted->accessTokenResponseBody;
-                $this->debug('getFromSession session decrypted');
+                $this->debug('getFromSession session decrypted set', ['azure_user', $this->azure_user]);
 
                 return $decrypted;
             }
@@ -441,8 +443,8 @@ class Provider extends AbstractProvider
         return false;
     }
 
-    private function debug($msg)
+    private function debug($msg, $context = [])
     {
-        Log::info('Azure: ' . $msg);
+        Log::info('Azure: ' . $msg, $context);
     }
 }
