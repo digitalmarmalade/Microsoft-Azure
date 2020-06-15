@@ -409,14 +409,14 @@ class Provider extends AbstractProvider
     public function getFromSession()
     {
         if ($this->session_loaded && $this->azure_user) {
-            $this->debug('getFromSession session loaded ' . $this->azure_user);
+            $this->debug('getFromSession session loaded');
             return $this->azure_user;
         } else {
             $decrypted = Session::get($this->session_token);
             if (isset($decrypted->accessTokenResponseBody)) {
                 $this->azure_user = $decrypted;
                 $this->credentialsResponseBody = $this->token_response = $decrypted->accessTokenResponseBody;
-                $this->debug('getFromSession session decrypted ' . $this->azure_user);
+                $this->debug('getFromSession session decrypted');
 
                 return $decrypted;
             }
