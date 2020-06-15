@@ -11,6 +11,7 @@ use SocialiteProviders\Manager\OAuth2\User;
 use Laravel\Socialite\Two\InvalidStateException;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 
 class Provider extends AbstractProvider
 {
@@ -113,6 +114,7 @@ class Provider extends AbstractProvider
      */
     public function getAccessToken($code)
     {
+        Log::info('Azure.getAccessToken');
         $postKey = (version_compare(ClientInterface::VERSION, '6') === 1) ? 'form_params' : 'body';
 
         $response = $this->getHttpClient()->post($this->getTokenUrl(), [
@@ -133,6 +135,7 @@ class Provider extends AbstractProvider
      */
     public function logout($redirectBack = null)
     {
+        Log::info('Azure.logout');
         return $this->getLogoutUrl($redirectBack);
     }
 
@@ -155,6 +158,7 @@ class Provider extends AbstractProvider
      */
     public function refreshToken($force = false)
     {
+        Log::info('Azure.refreshToken');
         if ($this->shouldTokenBeRefreshed()) {
             $this->token_response = $this->getRefreshTokenResponse();
 
@@ -202,6 +206,7 @@ class Provider extends AbstractProvider
         $expiry = Carbon::createFromTimestamp($this->parseExpiresOn(), $this->token_timezone);
         // token expired
         if ($expiry->lessThan($now)) {
+            Log::info('Azure.hasTokenExpired');
             return true;
         }
 
@@ -224,6 +229,7 @@ class Provider extends AbstractProvider
 
         // token expired
         if ($now->lessThan($expiry) && $diffInMinutes <= $this->token_refresh_threshold) {
+            Log::info('Azure.isTokenUnderThreshold');
             return true;
         }
 
