@@ -282,6 +282,7 @@ class Provider extends AbstractProvider
         $this->getTokenFromSession();
 
         if ($this->token_response['refresh_token']) {
+            $this->debug('getRefreshTokenResponse');
             $postKey = (version_compare(ClientInterface::VERSION, '6') === 1) ? 'form_params' : 'body';
 
             $response = $this->getHttpClient()->post($this->getTokenUrl(), [
