@@ -148,6 +148,7 @@ class Provider extends AbstractProvider
             throw new InvalidStateException();
         }
 
+        $this->debug('user');
         $this->token_response = $this->getAccessTokenResponse($this->getCode());
 
         return $this->getUserProfileFromReponse();
@@ -398,8 +399,10 @@ class Provider extends AbstractProvider
     public function saveToSession($user)
     {
         $this->debug('saveToSession', ['expiresIn' => $user->expiresIn]);
-        Session::put($this->session_token, $user);
-        Session::save();
+        $this->request->session()->put($this->session_token, $user);
+        $this->request->session()->save();
+        /*        Session::put($this->session_token, $user);
+                Session::save();*/
 
         return $this;
     }
@@ -415,7 +418,8 @@ class Provider extends AbstractProvider
             $this->debug('getFromSession session loaded');
             return $this->azure_user;
         } else {
-            $decrypted = Session::get($this->session_token);
+            $decrypted = $this->request->session()->get($this->session_token);
+            //$decrypted = Session::get($this->session_token);
             $this->debug('getFromSession session decrypted', ['expiresIn', $decrypted->expiresIn]);
             if (isset($decrypted->accessTokenResponseBody)) {
                 $this->azure_user = $decrypted;
