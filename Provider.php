@@ -204,11 +204,11 @@ class Provider extends AbstractProvider
      */
     public function hasTokenExpired()
     {
-        //$this->debug('hasTokenExpired');
         $this->getTokenFromSession();
 
         $now = Carbon::now($this->token_timezone);
         $expiry = Carbon::createFromTimestamp($this->parseExpiresOn(), $this->token_timezone);
+        $this->debug('hasTokenExpired', ['expires' => $expiry->format('H:i:s')]);
         // token expired
         if ($expiry->lessThan($now)) {
             $this->debug('hasTokenExpired lessThan now');
@@ -398,7 +398,8 @@ class Provider extends AbstractProvider
      */
     public function saveToSession($user)
     {
-        $this->debug('saveToSession', ['refreshToken' => $user->refreshToken]);
+        $expiry = Carbon::createFromTimestamp($this->parseExpiresOn(), $this->token_timezone);
+        $this->debug('saveToSession', ['expires' => $expiry->format('H:i:s')]);
         $this->request->session()->put($this->session_token, $user);
         $this->request->session()->save();
         /*        Session::put($this->session_token, $user);
@@ -423,7 +424,8 @@ class Provider extends AbstractProvider
             if (isset($decrypted->accessTokenResponseBody)) {
                 $this->azure_user = $decrypted;
                 $this->credentialsResponseBody = $this->token_response = $decrypted->accessTokenResponseBody;
-                $this->debug('getFromSession session decrypted set', ['refreshToken' => $decrypted->refreshToken]);
+                $expiry = Carbon::createFromTimestamp($this->parseExpiresOn(), $this->token_timezone);
+                $this->debug('getFromSession session decrypted set', ['expires' => $expiry->format('H:i:s')]);
 
                 return $decrypted;
             }
