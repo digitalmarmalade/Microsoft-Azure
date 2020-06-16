@@ -84,6 +84,7 @@ class Provider extends AbstractProvider
      */
     protected function getAuthUrl($state)
     {
+        $this->debug('getAuthUrl', ['called_by' => debug_backtrace()[1]['function']]);
         return $this->buildAuthUrlFromBase('https://login.microsoftonline.com/' . ($this->config['tenant'] ?: 'common') . '/oauth2/authorize', $state);
     }
 
