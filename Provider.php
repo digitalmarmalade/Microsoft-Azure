@@ -204,7 +204,7 @@ class Provider extends AbstractProvider
      */
     public function hasTokenExpired()
     {
-        $this->debug('hasTokenExpired');
+        //$this->debug('hasTokenExpired');
         $this->getTokenFromSession();
 
         $now = Carbon::now($this->token_timezone);
@@ -223,7 +223,7 @@ class Provider extends AbstractProvider
      */
     public function isTokenUnderThreshold()
     {
-        $this->debug('isTokenUnderThreshold');
+        //$this->debug('isTokenUnderThreshold');
         $this->getTokenFromSession();
 
         // get expiry and current time
@@ -398,7 +398,7 @@ class Provider extends AbstractProvider
      */
     public function saveToSession($user)
     {
-        $this->debug('saveToSession', ['expiresIn' => $user->expiresIn]);
+        $this->debug('saveToSession', ['refreshToken' => $user->refreshToken]);
         $this->request->session()->put($this->session_token, $user);
         $this->request->session()->save();
         /*        Session::put($this->session_token, $user);
@@ -420,11 +420,10 @@ class Provider extends AbstractProvider
         } else {
             $decrypted = $this->request->session()->get($this->session_token);
             //$decrypted = Session::get($this->session_token);
-            $this->debug('getFromSession session decrypted', ['expiresIn', $decrypted->expiresIn]);
             if (isset($decrypted->accessTokenResponseBody)) {
                 $this->azure_user = $decrypted;
                 $this->credentialsResponseBody = $this->token_response = $decrypted->accessTokenResponseBody;
-                $this->debug('getFromSession session decrypted set', ['expiresIn', $this->azure_user->expiresIn]);
+                $this->debug('getFromSession session decrypted set', ['refreshToken' => $decrypted->refreshToken]);
 
                 return $decrypted;
             }
@@ -441,7 +440,7 @@ class Provider extends AbstractProvider
      */
     public function getTokenFromSession()
     {
-        $this->debug('getTokenFromSession');
+        //$this->debug('getTokenFromSession');
         if ($this->getFromSession()) {
             return $this->token_response;
         }
