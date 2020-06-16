@@ -95,6 +95,7 @@ class Provider extends AbstractProvider
      */
     public function getLogoutUrl($redirectBack)
     {
+        $this->debug('getLogoutUrl', ['called_by' => debug_backtrace()[1]['function']]);
         return 'https://login.microsoftonline.com/' . ($this->config['tenant'] ?: 'common') . '/oauth2/logout' . '?' . http_build_query(['post_logout_redirect_uri' => $redirectBack], '', '&', $this->encodingType);
     }
 
@@ -103,6 +104,7 @@ class Provider extends AbstractProvider
      */
     protected function getTokenUrl()
     {
+        $this->debug('getTokenUrl', ['called_by' => debug_backtrace()[1]['function']]);
         return 'https://login.microsoftonline.com/common/oauth2/token';
     }
 
