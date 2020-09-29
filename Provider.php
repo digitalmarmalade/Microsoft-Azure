@@ -78,6 +78,14 @@ class Provider extends AzureProvider
                 '', '&', $this->encodingType);
     }
 
+    protected function mapUserToObject(array $user)
+    {
+        return (new User())->setRaw($user)->map([
+            'id'    => $user['objectId'], 'nickname' => null, 'name' => $user['displayName'],
+            'email' => $user['mail'], 'avatar' => null,
+        ]);
+    }
+
     /**
      * @return User
      */
