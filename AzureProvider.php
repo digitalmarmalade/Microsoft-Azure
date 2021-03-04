@@ -42,7 +42,7 @@ class AzureProvider extends AbstractProvider
      */
     protected function getTokenUrl()
     {
-        return 'https://login.microsoftonline.com/common/oauth2/token';
+        return 'https://login.microsoftonline.com/'.($this->config['tenant'] ?: 'common').'/oauth2/token';
     }
 
     public function getAccessToken($code)
